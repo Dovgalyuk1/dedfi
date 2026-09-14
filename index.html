@@ -45,27 +45,6 @@ a{color:inherit}
 .grain{background-image:radial-gradient(rgba(120,90,40,.5) .5px,transparent .6px);background-size:3px 3px;mix-blend-mode:multiply;opacity:.2}
 .vign{background:radial-gradient(ellipse at 50% 42%,#0000 55%,rgba(60,42,16,.34) 100%)}
 
-/* ---------- gate ---------- */
-#gate{position:fixed;inset:0;z-index:200;background:#241d13;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:20px}
-#gate.off{opacity:0;pointer-events:none;transition:opacity .5s}
-.ticket{
-  width:min(420px,92vw);background:var(--paper);border:2px solid var(--ink);
-  box-shadow:0 22px 0 rgba(0,0,0,.35), inset 0 0 0 6px var(--paper);
-  padding:26px 22px 20px;text-align:center;position:relative;
-  background-image:repeating-linear-gradient(0deg,rgba(43,35,24,.05) 0 1px,transparent 1px 22px);
-}
-.ticket:before,.ticket:after{content:"";position:absolute;left:0;right:0;height:12px;
-  background:radial-gradient(circle at 6px 0,#241d13 5px,transparent 5.5px) repeat-x;background-size:12px 12px}
-.ticket:before{top:-1px}
-.ticket:after{bottom:-1px;transform:rotate(180deg)}
-.ticket .lbl{font-family:"Special Elite",cursive;font-size:13px;letter-spacing:.3em;color:var(--ink2)}
-.ticket .num{font-family:"Archivo Black",sans-serif;font-size:76px;line-height:1;color:var(--blue);margin:8px 0 2px;letter-spacing:.04em}
-.ticket .sub{font-size:13px;color:var(--ink2);margin-bottom:16px}
-.ticket .go{display:inline-block;font-family:"Special Elite",cursive;font-size:15px;letter-spacing:.14em;
-  border:2px solid var(--ink);padding:10px 20px;background:var(--gold);box-shadow:0 4px 0 var(--ink);animation:blinkg 1.3s steps(2,end) infinite}
-@keyframes blinkg{50%{opacity:.45}}
-.ticket .fine{margin-top:14px;font-size:11px;color:var(--ink2);letter-spacing:.06em}
-
 /* ---------- ticker ---------- */
 .tick{background:var(--ink);color:var(--paper);border-bottom:2px solid var(--ink);overflow:hidden;white-space:nowrap;position:relative;z-index:20}
 .tick span{display:inline-block;padding:7px 0;font-family:"Special Elite",cursive;font-size:12.5px;letter-spacing:.2em;animation:mq 34s linear infinite}
@@ -302,16 +281,6 @@ window.BUY_URL  = "";      /* ссылка на покупку */
 </script>
 
 <div class="grain"></div><div class="vign"></div>
-
-<div id="gate">
-  <div class="ticket">
-    <div class="lbl">NOW SERVING</div>
-    <div class="num" id="tnum">41</div>
-    <div class="sub">window 3 · pensions, transfers, complaints</div>
-    <div class="go">CLICK TO STEP UP</div>
-    <div class="fine">please have your seniority ready</div>
-  </div>
-</div>
 
 <div class="tick"><span id="tickTxt"></span></div>
 
@@ -602,17 +571,17 @@ var TICK=["window 3 closed 13:00–13:45 for lunch","the drawer does not open","
   document.getElementById("tickTxt").textContent=line+line;
 })();
 
-/* ===================== gate ===================== */
+/* ============ music starts on the first interaction ============ */
 (function(){
-  var g=document.getElementById("gate"), n=document.getElementById("tnum"), done=false;
-  var spin=setInterval(function(){ n.textContent=String(30+Math.floor(Math.random()*60)); },90);
-  function open(){
-    if(done) return; done=true; clearInterval(spin); n.textContent="41";
-    g.classList.add("off"); sBell(); setTimeout(function(){ musToggle(true); },220);
-    setTimeout(function(){ g.style.display="none"; },520);
+  var armed=false, evs=["pointerdown","keydown","touchstart","wheel"];
+  function arm(e){
+    if(armed) return; armed=true;
+    evs.forEach(function(ev){ document.removeEventListener(ev,arm,true); });
+    var t=e&&e.target;
+    if(t&&t.closest&&t.closest("#musBtn,#sfxBtn")) return;
+    if(!MU.on) musToggle(true);
   }
-  g.addEventListener("click",open);
-  setTimeout(open,25000);
+  evs.forEach(function(ev){ document.addEventListener(ev,arm,true); });
 })();
 
 /* ===================== hero portrait ===================== */
