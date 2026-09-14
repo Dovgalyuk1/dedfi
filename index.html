@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DEDFI — the fund that never sells</title>
+<meta name="description" content="DEDFI. a cut of every buy walks over to window 3, gets filed, and buys stock. the drawer does not open.">
+<link rel="icon" href="assets/favicon.png">
+<meta property="og:title" content="DEDFI — the fund that never sells">
+<meta property="og:description" content="i take a cut of every buy and i put it in the drawer. the drawer does not open.">
+<meta property="og:image" content="assets/ava.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#efe6cf; --paper2:#e5d9ba; --paper3:#d9caa6;
+  --ink:#2b2318; --ink2:#5a4b35;
+  --blue:#1f3f8f; --blue2:#33579f;
+  --red:#b2242c; --green:#3f6b3a;
+  --brass:#c98a22; --gold:#f3cd72; --dark:#6d4a10;
+  --line:rgba(43,35,24,.24);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Courier Prime",ui-monospace,monospace;
+  font-size:16px; line-height:1.62;
+  overflow-x:clip;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(43,35,24,.055) 0 1px,transparent 1px 30px),
+    radial-gradient(rgba(43,35,24,.1) .6px,transparent .7px),
+    radial-gradient(ellipse at 50% 0%,#f6efdc 0%,#e7dbbd 60%,#dbcba5 100%);
+  background-size:auto,4px 4px,auto;
+}
+img{max-width:100%;display:block}
+h1,h2,h3{margin:0;font-family:"Special Elite",cursive;font-weight:400;letter-spacing:.02em}
+a{color:inherit}
+.wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+
+/* ---------- films ---------- */
+.grain,.vign{position:fixed;inset:0;pointer-events:none;z-index:90}
+.grain{background-image:radial-gradient(rgba(120,90,40,.5) .5px,transparent .6px);background-size:3px 3px;mix-blend-mode:multiply;opacity:.2}
+.vign{background:radial-gradient(ellipse at 50% 42%,#0000 55%,rgba(60,42,16,.34) 100%)}
+
+/* ---------- gate ---------- */
+#gate{position:fixed;inset:0;z-index:200;background:#241d13;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:20px}
+#gate.off{opacity:0;pointer-events:none;transition:opacity .5s}
+.ticket{
+  width:min(420px,92vw);background:var(--paper);border:2px solid var(--ink);
+  box-shadow:0 22px 0 rgba(0,0,0,.35), inset 0 0 0 6px var(--paper);
+  padding:26px 22px 20px;text-align:center;position:relative;
+  background-image:repeating-linear-gradient(0deg,rgba(43,35,24,.05) 0 1px,transparent 1px 22px);
+}
+.ticket:before,.ticket:after{content:"";position:absolute;left:0;right:0;height:12px;
+  background:radial-gradient(circle at 6px 0,#241d13 5px,transparent 5.5px) repeat-x;background-size:12px 12px}
+.ticket:before{top:-1px}
+.ticket:after{bottom:-1px;transform:rotate(180deg)}
+.ticket .lbl{font-family:"Special Elite",cursive;font-size:13px;letter-spacing:.3em;color:var(--ink2)}
+.ticket .num{font-family:"Archivo Black",sans-serif;font-size:76px;line-height:1;color:var(--blue);margin:8px 0 2px;letter-spacing:.04em}
+.ticket .sub{font-size:13px;color:var(--ink2);margin-bottom:16px}
+.ticket .go{display:inline-block;font-family:"Special Elite",cursive;font-size:15px;letter-spacing:.14em;
+  border:2px solid var(--ink);padding:10px 20px;background:var(--gold);box-shadow:0 4px 0 var(--ink);animation:blinkg 1.3s steps(2,end) infinite}
+@keyframes blinkg{50%{opacity:.45}}
+.ticket .fine{margin-top:14px;font-size:11px;color:var(--ink2);letter-spacing:.06em}
+
+/* ---------- ticker ---------- */
+.tick{background:var(--ink);color:var(--paper);border-bottom:2px solid var(--ink);overflow:hidden;white-space:nowrap;position:relative;z-index:20}
+.tick span{display:inline-block;padding:7px 0;font-family:"Special Elite",cursive;font-size:12.5px;letter-spacing:.2em;animation:mq 34s linear infinite}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- topbar ---------- */
+.top{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.top .brand{display:flex;align-items:center;gap:9px;font-family:"Special Elite",cursive;letter-spacing:.16em;font-size:13px}
+.top .brand img{width:26px;height:26px}
+.spacer{flex:1}
+.mini{font-family:"Special Elite",cursive;font-size:11.5px;letter-spacing:.16em;border:1.5px solid var(--ink);
+  background:var(--paper2);padding:6px 11px;cursor:pointer;box-shadow:2px 2px 0 rgba(43,35,24,.5)}
+.mini:active{transform:translate(2px,2px);box-shadow:none}
+.mini.on{background:var(--green);color:#f4efdf}
+
+/* ---------- hero ---------- */
+.hero{padding:16px 0 34px}
+.hero-in{display:grid;grid-template-columns:1.06fr .94fr;gap:34px;align-items:center}
+.kick{font-family:"Special Elite",cursive;font-size:12.5px;letter-spacing:.26em;color:var(--blue);
+  border-left:4px solid var(--red);padding-left:10px;margin-bottom:12px}
+.wordmark{
+  font-family:"Archivo Black",sans-serif;font-size:clamp(58px,10.4vw,124px);line-height:.92;letter-spacing:.005em;
+  background:linear-gradient(#fff6dd 26%,var(--gold) 50%,#a9701a 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:7px var(--ink);paint-order:stroke fill;
+  filter:drop-shadow(0 6px 0 var(--dark)) drop-shadow(0 12px 0 #3b2707);
+  margin:0 0 4px;
+}
+.tag{font-family:"Special Elite",cursive;font-size:clamp(16px,2.1vw,21px);line-height:1.42;margin:14px 0 14px;max-width:34ch}
+.lore p{margin:0 0 12px;max-width:52ch;font-size:15px}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.btn{font-family:"Special Elite",cursive;font-size:14px;letter-spacing:.14em;text-decoration:none;
+  border:2.5px solid var(--ink);padding:12px 20px;background:var(--gold);color:var(--ink);
+  box-shadow:0 5px 0 var(--ink);display:inline-block;cursor:pointer}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.alt{background:var(--paper2)}
+.btn.soon{background:#cdc3ab;color:#6b6252;cursor:not-allowed;box-shadow:0 5px 0 #8b8270}
+.btn.soon:after{content:" · soon";font-size:11px;opacity:.8}
+.cabox{margin-top:16px;display:inline-flex;align-items:center;gap:10px;border:1.5px dashed var(--ink);
+  padding:8px 13px;background:rgba(255,255,255,.34);cursor:pointer;font-size:12.5px;letter-spacing:.06em}
+.cabox b{font-weight:700;color:var(--blue)}
+
+/* portrait */
+.port{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.plaquewrap{width:min(190px,44%);transform:rotate(-1.2deg);filter:drop-shadow(0 7px 0 rgba(43,35,24,.3));border:1px solid rgba(43,35,24,.35)}
+.stage{position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;padding:32px 10px 0}
+.stage img{height:clamp(240px,40vh,400px);width:auto;image-rendering:pixelated;
+  filter:drop-shadow(0 12px 0 rgba(43,35,24,.18))}
+.stage .poke{position:absolute;left:50%;top:0;transform:translateX(-50%) rotate(-4deg);
+  font-family:"Special Elite",cursive;font-size:11.5px;letter-spacing:.14em;background:var(--red);color:#f6efdd;
+  border:2px solid var(--ink);padding:5px 11px;box-shadow:3px 3px 0 rgba(43,35,24,.45);white-space:nowrap;z-index:3}
+.stagelbl{font-family:"Special Elite",cursive;font-size:12px;letter-spacing:.16em;text-align:center;
+  border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line);padding:6px 12px;color:var(--ink2);min-width:230px}
+.stagelbl b{color:var(--blue)}
+#drop{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4}
+.coin{position:absolute;width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff0bd 12%,var(--gold) 46%,#9d6c15 100%);
+  border:2px solid #6d4a10;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.gocta{margin-top:6px;text-align:center}
+.gocta a{display:inline-block;font-family:"Special Elite",cursive;font-size:13.5px;letter-spacing:.12em;
+  text-decoration:none;background:var(--blue);color:#f4efdf;border:2.5px solid var(--ink);padding:11px 18px;
+  box-shadow:0 5px 0 var(--ink);transform:rotate(-1.4deg)}
+.gocta a:active{transform:rotate(-1.4deg) translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.gocta small{display:block;margin-top:8px;font-size:11.5px;color:var(--ink2);letter-spacing:.08em}
+
+/* ---------- section chrome ---------- */
+section{padding:44px 0}
+.sheet{background:linear-gradient(180deg,#f6efdc,#eadfc1);border:2px solid var(--ink);
+  box-shadow:6px 6px 0 rgba(43,35,24,.24);position:relative;padding:26px 24px}
+.sheet:before{content:"";position:absolute;left:26px;top:-9px;width:54px;height:16px;background:var(--paper3);
+  border:2px solid var(--ink);transform:rotate(-3deg)}
+.hd{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.hd h2{font-size:clamp(23px,4vw,36px);letter-spacing:.06em}
+.hd .no{font-family:"Courier Prime",monospace;font-size:12px;letter-spacing:.2em;color:var(--ink2);
+  border:1.5px solid var(--line);padding:3px 9px}
+.hd .rule{flex:1;height:0;border-bottom:2px dotted var(--line);min-width:40px}
+.lead{max-width:62ch;margin:10px 0 0;font-size:15px}
+.stamp{position:absolute;right:16px;top:14px;font-family:"Special Elite",cursive;font-size:12px;letter-spacing:.18em;
+  color:var(--red);border:3px double var(--red);padding:6px 11px;transform:rotate(-9deg);opacity:.72}
+
+/* ---------- the four steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+.step{background:rgba(255,255,255,.4);border:1.5px solid var(--line);padding:16px 15px;position:relative;min-width:0}
+.step h3{font-size:16px;letter-spacing:.14em;color:var(--blue);margin-bottom:7px}
+.step .n{position:absolute;right:10px;top:8px;font-family:"Archivo Black",sans-serif;font-size:30px;color:rgba(43,35,24,.1)}
+.step p{margin:0;font-size:13.7px;line-height:1.6}
+
+/* ---------- game ---------- */
+.game{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;margin-top:22px;align-items:start}
+.desk{background:linear-gradient(180deg,#5d4324,#432f19);border:2px solid var(--ink);padding:16px;position:relative;min-width:0;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.45)}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hud div{flex:1;min-width:88px;background:var(--paper2);border:1.5px solid var(--ink);padding:5px 8px;text-align:center}
+.hud span{display:block;font-size:10px;letter-spacing:.16em;color:var(--ink2)}
+.hud b{font-family:"Archivo Black",sans-serif;font-size:19px;letter-spacing:.02em}
+.papers{position:relative;height:250px;background:#3a2915;border:1.5px solid rgba(0,0,0,.5);overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.form{position:absolute;width:min(94%,470px);background:var(--paper);border:1.5px solid var(--ink);padding:15px 16px 18px;
+  box-shadow:0 10px 0 rgba(0,0,0,.35);transform:translateY(-320px) rotate(-1deg);transition:transform .34s cubic-bezier(.2,.9,.3,1.2)}
+.form.in{transform:translateY(0) rotate(-1deg)}
+.form.out{transform:translateY(320px) rotate(3deg);transition:transform .3s ease-in}
+.form .fh{font-family:"Special Elite",cursive;font-size:11.5px;letter-spacing:.18em;color:var(--red);margin-bottom:5px}
+.form .ft{font-family:"Special Elite",cursive;font-size:clamp(15px,2.4vw,19px);line-height:1.3;margin-bottom:7px}
+.form .fb{font-size:13.2px;line-height:1.55;color:var(--ink2);min-height:42px}
+.form .fline{margin-top:9px;border-top:1.5px dotted var(--line);padding-top:7px;font-size:11px;letter-spacing:.12em;color:var(--ink2);
+  display:flex;justify-content:space-between;gap:10px}
+.ink{position:absolute;pointer-events:none;font-family:"Archivo Black",sans-serif;font-size:34px;letter-spacing:.06em;
+  color:rgba(31,63,143,.82);border:5px solid rgba(31,63,143,.82);padding:3px 12px;opacity:0}
+.ink.go{animation:slam .5s ease-out forwards}
+@keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) scale(3.4) rotate(-16deg)}
+ 60%{opacity:1;transform:translate(-50%,-50%) scale(.94) rotate(-9deg)}
+ 100%{opacity:.9;transform:translate(-50%,-50%) scale(1) rotate(-9deg)}}
+.idle{color:var(--paper3);font-family:"Special Elite",cursive;font-size:13px;letter-spacing:.2em;text-align:center;padding:0 18px}
+.timer{height:12px;background:#2a1d0e;border:1.5px solid rgba(0,0,0,.5);margin-top:12px;position:relative;overflow:hidden}
+.timer i{position:absolute;inset:0;width:100%;transform-origin:left;background:linear-gradient(90deg,var(--green),#93b56a)}
+.timer.warn i{background:linear-gradient(90deg,var(--red),#e4795b)}
+.stamps{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;justify-content:center;min-height:56px}
+.st{font-family:"Archivo Black",sans-serif;font-size:17px;letter-spacing:.04em;padding:11px 15px;cursor:pointer;
+  border:3px solid var(--ink);background:var(--paper);color:var(--blue);box-shadow:0 5px 0 rgba(0,0,0,.55);
+  transition:box-shadow .12s}
+.st:active{box-shadow:0 1px 0 rgba(0,0,0,.55)}
+.st.red{color:var(--red)}
+.st.grey{color:#6b6252}
+.st[disabled]{opacity:.5;cursor:default}
+.startbtn{width:100%;margin-top:14px;font-family:"Special Elite",cursive;font-size:15px;letter-spacing:.16em;
+  border:2.5px solid var(--ink);background:var(--gold);padding:13px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.55)}
+.startbtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.55)}
+
+.book{background:var(--paper);border:2px solid var(--ink);padding:14px;min-width:0;box-shadow:4px 4px 0 rgba(43,35,24,.24)}
+.book h3{font-size:15px;letter-spacing:.16em;margin-bottom:3px}
+.book .bsub{font-size:11px;letter-spacing:.1em;color:var(--ink2);margin-bottom:10px}
+.rows{list-style:none;margin:0;padding:0;border-top:1.5px solid var(--line)}
+.rows li{display:flex;align-items:center;gap:9px;border-bottom:1.5px solid var(--line);padding:6px 2px;font-size:12.4px}
+.rows li .yr{font-family:"Archivo Black",sans-serif;font-size:12px;width:34px;color:var(--ink2)}
+.rows li .tx{flex:1;min-width:0;color:var(--ink2)}
+.rows li .mk{font-family:"Special Elite",cursive;font-size:11px;letter-spacing:.1em;color:var(--paper3)}
+.rows li.done .tx{color:var(--ink)}
+.rows li.done .mk{color:var(--blue);border:1.5px solid var(--blue);padding:0 5px;transform:rotate(-4deg)}
+.rows li.now{background:rgba(243,205,114,.35)}
+.clerk{margin-top:12px;display:flex;align-items:flex-end;gap:10px;border-top:1.5px solid var(--line);padding-top:10px}
+.clerk img{height:104px;width:auto;image-rendering:pixelated}
+.clerk div{font-size:11.5px;letter-spacing:.06em;color:var(--ink2)}
+.clerk b{display:block;font-family:"Special Elite",cursive;font-size:12.5px;letter-spacing:.14em;color:var(--ink)}
+.log{margin-top:12px;height:104px;overflow:auto;background:#2a1d0e;color:#cdbb92;border:1.5px solid var(--ink);
+  padding:8px 10px;font-size:11.5px;line-height:1.55}
+.log p{margin:0 0 3px}
+.log .ok{color:#a9c98a}
+.log .bad{color:#e08a72}
+
+/* ---------- win card ---------- */
+#win{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;background:rgba(36,29,19,.82);padding:20px}
+#win.on{display:flex}
+.wincard{width:min(520px,94vw);background:var(--paper);border:3px solid var(--ink);box-shadow:0 18px 0 rgba(0,0,0,.4);
+  padding:22px;text-align:center;position:relative}
+.wincard img{height:210px;width:auto;margin:0 auto;image-rendering:pixelated}
+.wincard h3{font-size:25px;letter-spacing:.1em;color:var(--blue);margin:8px 0 6px}
+.wincard p{margin:0 auto 14px;max-width:42ch;font-size:14px}
+.wincard .seal{position:absolute;left:14px;top:14px;font-family:"Special Elite",cursive;font-size:11px;letter-spacing:.16em;
+  color:var(--red);border:3px double var(--red);padding:5px 9px;transform:rotate(-11deg)}
+#rain{position:fixed;inset:0;pointer-events:none;z-index:160;overflow:hidden}
+
+/* ---------- files ---------- */
+.files{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+.file{background:var(--paper2);border:2px solid var(--ink);padding:14px 13px;position:relative;min-width:0;
+  box-shadow:4px 4px 0 rgba(43,35,24,.2);transition:transform .16s}
+.file:before{content:"";position:absolute;left:12px;top:-8px;width:44px;height:14px;background:var(--paper3);border:2px solid var(--ink)}
+.file h3{font-size:14.5px;letter-spacing:.16em;color:var(--blue);margin-bottom:6px}
+.file p{margin:0;font-size:13px;line-height:1.55}
+.file.lock{color:transparent;user-select:none}
+.file.lock p,.file.lock h3{filter:blur(4px);opacity:.55}
+.file .seal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"Special Elite",cursive;font-size:11.5px;letter-spacing:.14em;color:var(--ink2);background:rgba(217,202,166,.72)}
+.file.open .seal{display:none}
+.file.open{transform:translateY(-3px)}
+
+/* ---------- notes ---------- */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+.note{background:#fdf7e6;border:1.5px solid var(--ink);padding:12px;min-width:0;box-shadow:5px 5px 0 rgba(43,35,24,.2)}
+.note:nth-child(2){transform:rotate(.8deg)}
+.note:nth-child(3){transform:rotate(-.7deg)}
+.note .im{background:var(--paper3);border:1.5px solid var(--line);aspect-ratio:4/3;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.note .im img{height:100%;width:auto;object-fit:contain;image-rendering:pixelated}
+.note h3{font-size:14px;letter-spacing:.14em;margin:10px 0 5px;color:var(--blue)}
+.note p{margin:0;font-size:13px;line-height:1.55}
+
+/* ---------- spec ---------- */
+.spec{margin-top:20px;border:2px solid var(--ink);background:rgba(255,255,255,.34)}
+.spec .row{display:grid;grid-template-columns:200px 1fr;gap:0;border-bottom:1.5px solid var(--line)}
+.spec .row:last-child{border-bottom:0}
+.spec .k{font-family:"Special Elite",cursive;font-size:13px;letter-spacing:.18em;padding:14px 16px;
+  border-right:1.5px solid var(--line);background:rgba(217,202,166,.45);color:var(--blue)}
+.spec .v{padding:14px 16px;font-size:13.6px}
+
+/* ---------- footer ---------- */
+footer{border-top:2px solid var(--ink);margin-top:20px;padding:26px 0 40px;font-size:12px;color:var(--ink2)}
+.fin{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.fin img{width:44px;height:44px}
+.fin .sig{font-family:"Special Elite",cursive;font-size:13px;letter-spacing:.1em;color:var(--blue);
+  border-bottom:1.5px solid var(--blue);padding-bottom:2px}
+
+/* ---------- responsive ---------- */
+@media(max-width:1000px){
+  .hero-in{grid-template-columns:1fr;gap:24px}
+  .hero-in>div:last-child{order:-1}
+  .stage img{max-height:262px;height:auto;width:auto}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .game{grid-template-columns:1fr}
+  .files{grid-template-columns:repeat(2,1fr)}
+  .notes{grid-template-columns:1fr}
+  .spec .row{grid-template-columns:1fr}
+  .spec .k{border-right:0;border-bottom:1.5px solid var(--line)}
+}
+@media(max-width:560px){
+  .wrap{padding:0 15px}
+  .wordmark{-webkit-text-stroke:5px var(--ink)}
+  .steps{grid-template-columns:1fr}
+  .files{grid-template-columns:1fr}
+  .sheet{padding:20px 15px}
+  .papers{height:238px}
+  .stamp{position:static;display:inline-block;margin-top:8px}
+  .hud b{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<script>
+/* ============ SETTINGS ============ */
+window.CONTRACT = "";      /* адрес контракта */
+window.TWITTER  = "";      /* ссылка на X */
+window.BUY_URL  = "";      /* ссылка на покупку */
+/* ================================== */
+</script>
+
+<div class="grain"></div><div class="vign"></div>
+
+<div id="gate">
+  <div class="ticket">
+    <div class="lbl">NOW SERVING</div>
+    <div class="num" id="tnum">41</div>
+    <div class="sub">window 3 · pensions, transfers, complaints</div>
+    <div class="go">CLICK TO STEP UP</div>
+    <div class="fine">please have your seniority ready</div>
+  </div>
+</div>
+
+<div class="tick"><span id="tickTxt"></span></div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><img src="assets/favicon.png" alt="the brass mark on the wall of window 3"><span>DEDFI · WINDOW 3</span></div>
+    <div class="spacer"></div>
+    <div class="mini" id="sfxBtn">SOUND: ON</div>
+    <div class="mini" id="musBtn">MUSIC: OFF</div>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <div class="kick">FILED AT WINDOW 3 · EST. SOMETIME BEFORE YOU</div>
+      <h1 class="wordmark">DEDFI</h1>
+      <div class="tag">i take a cut of every buy and i put it in the drawer. the drawer does not open.</div>
+      <div class="lore">
+        <p>every time somebody buys, a small piece of that trade walks over to my window and gets filed. i use it to buy stock — real stock, the boring kind, the kind your uncle bought in 1986 and then forgot about for thirty years and accidentally got rich.</p>
+        <p>then it goes in the fund and it stays there. not when it dips, not when the chat is screaming, not when a man in a good suit on television says that this time is different. you hold the coin, your seniority goes up, and what the fund collects goes back out to the people who stayed. that is the whole arrangement.</p>
+      </div>
+      <div class="hero-btns">
+        <a class="btn soon" id="buyBtn" href="#">BUY $DEDFI</a>
+        <a class="btn alt xLink" id="xBtn" href="#" target="_blank" rel="noopener">FOLLOW ON X</a>
+      </div>
+      <div class="cabox" id="caBox"><span>CONTRACT</span> <b class="ca-val">not filed yet</b></div>
+    </div>
+
+    <div class="port">
+      <img class="plaquewrap" src="assets/plaque.webp" alt="the brass plate screwed to the wall above the window, polished every friday whether it needs it or not">
+      <div class="stage" id="stage">
+        <div class="poke">poke him · he pays</div>
+        <img id="stageImg" src="assets/ded-1.webp" alt="the clerk at window 3, somewhere in his long and uneventful career">
+        <div id="drop"></div>
+      </div>
+      <div class="stagelbl" id="stageLbl">YEAR 01 · <b>NEW HIRE</b> · fund holds nothing yet</div>
+      <div class="gocta">
+        <a href="#book">OPEN THE RECORD BOOK →</a>
+        <small>eight years. one stamp. try not to pick the wrong one.</small>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HOW ================= -->
+<section id="how">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="stamp">RECEIVED</div>
+      <div class="hd"><h2>HOW THE MONEY GETS HERE</h2><span class="no">FORM 01-A</span><div class="rule"></div></div>
+      <p class="lead">four steps. it has been four steps since before the computers, and nobody has managed to talk me into a fifth one.</p>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h3>THE BUY</h3><p>somebody buys the coin. a little piece of that trade gets peeled off at the window and written into the book by hand. it is not a large piece. it is just a very consistent one.</p></div>
+        <div class="step"><div class="n">2</div><h3>THE DRAWER</h3><p>that piece buys stock and the stock goes into the drawer. the drawer has one direction, which is in. i lost the key to the other direction in 1994 and i have not looked very hard for it.</p></div>
+        <div class="step"><div class="n">3</div><h3>THE SENIORITY</h3><p>while you hold, your seniority accrues. it accrues on weekends, it accrues on holidays, it accrues while you sleep. it stops the minute you walk out, and it starts over from zero when you come back.</p></div>
+        <div class="step"><div class="n">4</div><h3>THE PAYOUT</h3><p>what the drawer collects goes back out to whoever is still standing there, and the bigger your seniority the bigger your share of it. the people who left get a very polite letter and nothing else.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GAME ================= -->
+<section id="book">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="stamp">IN PROGRESS</div>
+      <div class="hd"><h2>THE RECORD BOOK</h2><span class="no">EIGHT YEARS</span><div class="rule"></div></div>
+      <p class="lead">this is the job. the paperwork comes up to the window, you read it, and you bring down the right stamp before the clerk behind you starts sighing. the right stamp is always HOLD. that does not make it as easy as it sounds.</p>
+
+      <div class="game">
+        <div class="desk">
+          <div class="hud">
+            <div><span>YEAR</span><b id="hYear">0/8</b></div>
+            <div><span>SERVICE</span><b id="hSen">0y</b></div>
+            <div><span>IN DRAWER</span><b id="hFund">0</b></div>
+            <div><span>MISFILED</span><b id="hMiss">0</b></div>
+          </div>
+          <div class="papers" id="papers">
+            <div class="idle" id="idleTxt">the window is closed.<br>press the bell to open it.</div>
+          </div>
+          <div class="timer" id="timerBox"><i id="timerBar" style="transform:scaleX(0)"></i></div>
+          <div class="stamps" id="stamps"></div>
+          <button class="startbtn" id="startBtn">RING THE BELL · START YOUR FIRST YEAR</button>
+        </div>
+
+        <div class="book">
+          <h3>SERVICE RECORD</h3>
+          <div class="bsub">dedfi pension office · book no. 41</div>
+          <ul class="rows" id="rows"></ul>
+          <div class="clerk">
+            <img id="clerkImg" src="assets/ded-1.webp" alt="the clerk, aging in real time at the pace of the paperwork">
+            <div><b id="clerkName">NEW HIRE</b><span id="clerkNote">still has all his hair. it will not last.</span></div>
+          </div>
+          <div class="log" id="log"><p>book opened. pen located. nothing filed yet.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FILES ================= -->
+<section id="files">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="stamp">RESTRICTED</div>
+      <div class="hd"><h2>THE FILING CABINET</h2><span class="no">8 FOLDERS</span><div class="rule"></div></div>
+      <p class="lead">one folder opens for every year you survive. you can also just stand there and look at the drawer, but it will not open itself, it never has.</p>
+      <div class="files" id="fileGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NOTES ================= -->
+<section id="notes">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="hd"><h2>FIELD NOTES</h2><span class="no">MARGINALIA</span><div class="rule"></div></div>
+      <div class="notes">
+        <div class="note">
+          <div class="im"><img src="assets/f-hire.webp" alt="the clerk on his first morning, tie done badly, absolutely convinced he is going somewhere"></div>
+          <h3>DAY ONE</h3>
+          <p>they gave me a stool, a blue stamp and a book with nothing in it. the man who trained me said the job is easy, you just never sell, and then he retired at lunchtime and i never saw him again.</p>
+        </div>
+        <div class="note">
+          <div class="im"><img src="assets/f-medals.webp" alt="four service ribbons for four decades of not doing the exciting thing"></div>
+          <h3>THE MEDALS</h3>
+          <p>one for ten years, one for twenty, one for thirty, and one they gave me because the man from the office felt awkward showing up empty-handed. none of them are for making a clever trade. they are all for sitting still.</p>
+        </div>
+        <div class="note">
+          <div class="im"><img src="assets/f-cat.webp" alt="the office cat, asleep on the only warm thing in the building"></div>
+          <h3>THE CAT</h3>
+          <p>he came in through the back door in february and filed himself under my knees. he has no seniority and no position and he gets paid in the same stock as everyone else, which he has never once complained about.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SPEC ================= -->
+<section id="spec">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="stamp">CERTIFIED</div>
+      <div class="hd"><h2>THE PAPERWORK</h2><span class="no">FORM 08-K</span><div class="rule"></div></div>
+      <div class="spec">
+        <div class="row"><div class="k">SUPPLY</div><div class="v">counted once, by hand, on the back of an envelope, and the envelope went in the drawer with everything else. nobody is printing more. people have asked, and their requests are filed in a place i will not be describing.</div></div>
+        <div class="row"><div class="k">LIQUIDITY</div><div class="v">burned, the same way we burned the 1991 correspondence, in a bin in the yard while the man from the office looked away. there is no key, there is no key holder, and there is no meeting scheduled about it.</div></div>
+        <div class="row"><div class="k">TAX</div><div class="v">nothing on the way in and nothing on the way out. the only cut is the one taken at the window, and that cut does not come home with me. it goes in the drawer and it buys stock, which is the entire reason this office exists.</div></div>
+        <div class="row"><div class="k">OWNERSHIP</div><div class="v">renounced. i signed it, i stamped it, i filed it, and then the filing system was reorganised by someone very enthusiastic in 1998 and nobody has found it since. that is as renounced as anything gets around here.</div></div>
+        <div class="row"><div class="k">THE STAMP</div><div class="v">blue, wooden handle, worn smooth on one side. it says HOLD. there is a red one in the top drawer that says something else and it has been in there so long the ink has gone solid.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap fin">
+    <img src="assets/favicon.png" alt="the brass mark, screwed on crooked in 1979 and left that way">
+    <div>
+      <div class="sig">DEDFI · window 3 · the drawer does not open</div>
+      <div>seniority accrues while you are reading this. it also accrues while you are not.</div>
+    </div>
+    <div class="spacer"></div>
+    <a class="mini xLink" href="#" target="_blank" rel="noopener" style="text-decoration:none">X</a>
+  </div>
+</footer>
+
+<div id="win">
+  <div class="wincard">
+    <div class="seal">APPROVED</div>
+    <img src="assets/ded-4.webp" alt="forty years later, same chair, same drawer, considerably more cat">
+    <h3>PENSION GRANTED</h3>
+    <p>forty years of service, one stamp, no sales. the drawer is full and it still does not open. go and sit down, you have earned the chair.</p>
+    <button class="btn" id="winClose">CLOSE THE BOOK</button>
+  </div>
+</div>
+<div id="rain"></div>
+
+<script>
+/* ===================== settings wiring ===================== */
+var CA=(window.CONTRACT||"").trim(), TW=(window.TWITTER||"").trim(), BUY=(window.BUY_URL||"").trim();
+if(CA){
+  document.querySelectorAll(".ca-val").forEach(function(e){ e.textContent=CA.slice(0,6)+"…"+CA.slice(-4); });
+  document.getElementById("caBox").addEventListener("click",function(){
+    var b=this.querySelector("b"), old=b.textContent;
+    navigator.clipboard.writeText(CA).then(function(){ b.textContent="copied"; setTimeout(function(){ b.textContent=old; },1200); });
+  });
+}
+if(TW){ document.querySelectorAll("#xBtn,.xLink").forEach(function(a){ a.href=TW; }); }
+var buy=document.getElementById("buyBtn");
+if(buy){
+  if(BUY){ buy.href=BUY; buy.target="_blank"; buy.rel="noopener"; buy.classList.remove("soon"); }
+  else{ buy.addEventListener("click",function(e){ e.preventDefault(); }); }
+}
+
+/* ===================== audio ===================== */
+var AC=null, sfxOn=true, vol=1;
+function ac(){ try{ if(!AC){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; AC=new C(); } if(AC.state==="suspended") AC.resume(); return AC; }catch(e){ return null; } }
+function tone(f1,f2,dur,type,g){
+  if(!sfxOn) return; var c=ac(); if(!c) return;
+  var o=c.createOscillator(), gg=c.createGain(), t=c.currentTime;
+  o.type=type||"sine"; o.frequency.setValueAtTime(f1,t);
+  if(f2&&f2!==f1) o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);
+  gg.gain.setValueAtTime(.0001,t); gg.gain.exponentialRampToValueAtTime((g||.06)*vol,t+.012);
+  gg.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(gg); gg.connect(c.destination); o.start(t); o.stop(t+dur+.05);
+}
+function noise(dur,f,g,q){
+  if(!sfxOn) return; var c=ac(); if(!c) return;
+  var n=Math.floor(c.sampleRate*dur), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(var i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  var s=c.createBufferSource(); s.buffer=b;
+  var f1=c.createBiquadFilter(); f1.type="bandpass"; f1.frequency.value=f||900; f1.Q.value=q||1.1;
+  var gg=c.createGain(); gg.gain.value=(g||.14)*vol;
+  s.connect(f1); f1.connect(gg); gg.connect(c.destination); s.start();
+}
+function sStamp(){ noise(.09,320,.3,.7); tone(150,60,.16,"sine",.16); }
+function sPage(){ noise(.22,2600,.05,.6); }
+function sOk(){ tone(520,780,.14,"triangle",.07); setTimeout(function(){ tone(780,1040,.13,"triangle",.055); },90); }
+function sBad(){ tone(190,90,.34,"square",.075); }
+function sCoin(){ tone(1180,1760,.09,"triangle",.055); setTimeout(function(){ tone(1760,2300,.07,"triangle",.035); },60); }
+function sBell(){ tone(1560,1560,.5,"sine",.06); setTimeout(function(){ tone(2340,2340,.45,"sine",.03); },20); }
+
+/* ---- music: slow office accordion with a wall clock ---- */
+var MEL=[0,4,7,4, 9,7,4,2, 0,4,7,11, 9,7,4,0];
+var BAS=[-24,-17,-24,-17, -22,-15,-22,-15, -24,-17,-24,-17, -20,-17,-24,-17];
+var STEP=.46;
+var MU={on:false,t:null,step:0,next:0};
+function hz(semi){ return 220*Math.pow(2,semi/12); }
+function accNote(semi,at,dur,g){
+  var c=ac(); if(!c) return;
+  [0,-.09,.11].forEach(function(det,i){
+    var o=c.createOscillator(), gg=c.createGain();
+    o.type=i===0?"triangle":"sawtooth";
+    o.frequency.setValueAtTime(hz(semi)*Math.pow(2,det/12),at);
+    var lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1700;
+    gg.gain.setValueAtTime(.0001,at);
+    gg.gain.linearRampToValueAtTime((i===0?g:g*.42)*vol,at+.07);
+    gg.gain.setValueAtTime((i===0?g:g*.42)*vol,at+dur*.6);
+    gg.gain.exponentialRampToValueAtTime(.0001,at+dur);
+    o.connect(lp); lp.connect(gg); gg.connect(c.destination);
+    o.start(at); o.stop(at+dur+.05);
+  });
+}
+function clockTick(at){
+  var c=ac(); if(!c) return;
+  var n=Math.floor(c.sampleRate*.03), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(var i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  var s=c.createBufferSource(); s.buffer=b;
+  var f=c.createBiquadFilter(); f.type="bandpass"; f.frequency.value=3200; f.Q.value=3;
+  var gg=c.createGain(); gg.gain.value=.035*vol;
+  s.connect(f); f.connect(gg); gg.connect(c.destination); s.start(at);
+}
+function musSchedule(){
+  var c=ac(); if(!c) return;
+  while(MU.next < c.currentTime+.6){
+    var i=MU.step%16, at=Math.max(MU.next,c.currentTime+.02);
+    accNote(MEL[i],at,STEP*.92,.036);
+    if(i%2===0) accNote(BAS[i],at,STEP*1.7,.05);
+    clockTick(at);
+    MU.next+=STEP; MU.step++;
+  }
+}
+function musToggle(on){
+  MU.on=on;
+  var b=document.getElementById("musBtn");
+  b.textContent="MUSIC: "+(on?"ON":"OFF"); b.classList.toggle("on",on);
+  if(on){ var c=ac(); if(!c) return; MU.next=c.currentTime+.1; if(!MU.t) MU.t=setInterval(musSchedule,110); }
+  else if(MU.t){ clearInterval(MU.t); MU.t=null; }
+}
+document.getElementById("musBtn").addEventListener("click",function(){ musToggle(!MU.on); });
+document.getElementById("sfxBtn").addEventListener("click",function(){
+  sfxOn=!sfxOn; this.textContent="SOUND: "+(sfxOn?"ON":"OFF"); this.classList.toggle("on",sfxOn); if(sfxOn) sOk();
+});
+document.getElementById("sfxBtn").classList.add("on");
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden&&MU.on&&MU.t){ clearInterval(MU.t); MU.t=null; }
+  else if(!document.hidden&&MU.on&&!MU.t){ var c=ac(); if(c){ MU.next=c.currentTime+.1; MU.t=setInterval(musSchedule,110); } }
+});
+
+/* ===================== ticker ===================== */
+var TICK=["window 3 closed 13:00–13:45 for lunch","the drawer does not open","seniority accrues on public holidays","form 8-K filed by hand, as always","please do not fold this page","the cat has no seniority and gets paid anyway","the red stamp has gone solid","do not ask about 1998","forty years, zero sales","the bell works, press it once"];
+(function(){
+  var line=TICK.join("   ·   ")+"   ·   ";
+  document.getElementById("tickTxt").textContent=line+line;
+})();
+
+/* ===================== gate ===================== */
+(function(){
+  var g=document.getElementById("gate"), n=document.getElementById("tnum"), done=false;
+  var spin=setInterval(function(){ n.textContent=String(30+Math.floor(Math.random()*60)); },90);
+  function open(){
+    if(done) return; done=true; clearInterval(spin); n.textContent="41";
+    g.classList.add("off"); sBell(); setTimeout(function(){ musToggle(true); },220);
+    setTimeout(function(){ g.style.display="none"; },520);
+  }
+  g.addEventListener("click",open);
+  setTimeout(open,25000);
+})();
+
+/* ===================== hero portrait ===================== */
+var STAGES=[
+  {img:"assets/ded-1.webp", name:"NEW HIRE",   yr:"YEAR 01", note:"fund holds nothing yet"},
+  {img:"assets/ded-2.webp", name:"ON THE BOOK",yr:"YEAR 17", note:"drawer is getting heavy"},
+  {img:"assets/ded-3.webp", name:"VETERAN",    yr:"YEAR 34", note:"four ribbons, zero sales"},
+  {img:"assets/ded-4.webp", name:"RETIRED",    yr:"YEAR 41", note:"still not selling, just asleep"}
+];
+(function(){
+  var i=0, im=document.getElementById("stageImg"), lb=document.getElementById("stageLbl");
+  setInterval(function(){
+    i=(i+1)%STAGES.length; var s=STAGES[i];
+    im.src=s.img; im.style.opacity=".35";
+    setTimeout(function(){ im.style.opacity="1"; },70);
+    lb.innerHTML=s.yr+" · <b>"+s.name+"</b> · "+s.note;
+  },2600);
+})();
+
+/* coins on poke */
+var drop=document.getElementById("drop");
+function dropCoin(x,y){
+  var d=document.createElement("div"); d.className="coin";
+  var W=drop.clientWidth||300, H=drop.clientHeight||320;
+  if(x===undefined){ x=Math.random()*W; y=-20; }
+  d.style.left=(x-13)+"px"; d.style.top=(y-13)+"px"; drop.appendChild(d);
+  var vx=(Math.random()-.5)*7, vy=-4-Math.random()*5, n=0, rot=(Math.random()-.5)*22, px=x-13, py=y-13;
+  (function stp(){
+    n++; vy+=.42; px+=vx; py+=vy;
+    d.style.transform="translate("+(px-(x-13))+"px,"+(py-(y-13))+"px) rotate("+(n*rot)+"deg)";
+    if(n>120||py>H+320){ d.remove(); return; }
+    if(n>100) d.style.opacity=String(1-(n-100)/20);
+    requestAnimationFrame(stp);
+  })();
+}
+document.getElementById("stage").addEventListener("click",function(e){
+  var r=drop.getBoundingClientRect();
+  var x=(e.clientX||r.left+r.width/2)-r.left, y=(e.clientY||r.top+r.height/2)-r.top;
+  for(var i=0;i<7;i++) setTimeout(function(){ dropCoin(x+(Math.random()-.5)*60,y+(Math.random()-.5)*40); },i*38);
+  sCoin();
+});
+
+/* ===================== the record book game ===================== */
+var YEARS=[
+  {h:"APPLICATION TO WITHDRAW",t:"holder no. 0001 would like his money back",b:"he has been in for six days and he has read one article. he says he has a feeling about this and the feeling is very strong."},
+  {h:"MEMO FROM THE FLOOR",t:"the chart made a shape",b:"somebody drew two lines on it in the break room and now everybody is standing at the window asking what the shape means. it means nothing. stamp it."},
+  {h:"URGENT · MARKET NOTICE",t:"everything is down and the phones are loud",b:"three men in good suits have been on television since breakfast explaining that it is different this time. it is 1987. it will be different again in 2001."},
+  {h:"REQUEST FOR REVIEW",t:"a consultant has recommended repositioning",b:"he used the word repositioning eleven times and at no point did he say what he wanted repositioned into. he bills by the hour. stamp it and show him out."},
+  {h:"HOLDER CORRESPONDENCE",t:"a man is threatening to leave",b:"he wants us to know he has other options, better options, options with rockets in the logo. we wish him a pleasant journey and his seniority goes to zero on the way out."},
+  {h:"BOARD RESOLUTION",t:"a proposal to take some profit",b:"somebody has pointed out that the drawer is quite full now and asked, reasonably, whether we might open it just slightly. the drawer does not open slightly."},
+  {h:"EMERGENCY SESSION",t:"it is down sixty percent and the lights are flickering",b:"two of the juniors have left the building without their coats. the cat is unmoved. the drawer is unmoved. you know what the stamp says."},
+  {h:"FINAL ENTRY · YEAR EIGHT",t:"they are asking if you ever sold, even once",b:"there is a man from the office with a clipboard and a very hopeful expression. forty years of blue ink says one word and it has never said anything else."}
+];
+var DECOYS=["SELL","SELL ALL","HODL","H0LD","DUMP","HOLD.","LIQUIDATE","H-OLD","HOLO","MARKET SELL","REBALANCE","TAKE PROFIT"];
+var FILES=[
+  {t:"THE FEE",p:"it is small, it is taken at the window, and it is the only thing anybody here is allowed to take. it does not buy me lunch. it buys stock and the stock goes in the drawer."},
+  {t:"THE DRAWER",p:"one direction only, and that direction is in. i have been told several times that this is not sophisticated. it is not. it has also never once lost anybody their position."},
+  {t:"THE STAMP",p:"blue, wooden, worn smooth on the left side from forty years of the same motion. i could do it in my sleep and on at least two occasions in 2003 i believe i did."},
+  {t:"THE BOOK",p:"every year gets a line, every line gets a stamp, and the lines do not come out. people ask if it is backed up anywhere. it is a book. it is the backup."},
+  {t:"THE BELL",p:"press it once. everybody presses it four times and it does exactly the same thing, which is bring me out of the back room at the speed i was already walking."},
+  {t:"THE CAT",p:"arrived february, filed himself under my knees, never produced documentation. he has no seniority whatsoever and takes his share in stock like everybody else."},
+  {t:"THE MEDALS",p:"four ribbons for four decades of not doing the exciting thing. nobody hands out a ribbon for the trade you did not make, except here, where that is the only kind we have."},
+  {t:"THE CHAIR",p:"it was in the back room when i arrived and nobody ever claimed it. it rocks, it creaks on the way forward, and it is where the job ends up if you do it long enough."}
+];
+var G={running:false,year:0,paper:0,papersInYear:1,sen:0,fund:0,miss:0,timer:null,t0:0,dur:0,locked:false,done:false};
+var papers=document.getElementById("papers"), stampsEl=document.getElementById("stamps"),
+    rowsEl=document.getElementById("rows"), logEl=document.getElementById("log"),
+    startBtn=document.getElementById("startBtn"), idleTxt=document.getElementById("idleTxt"),
+    timerBar=document.getElementById("timerBar"), timerBox=document.getElementById("timerBox"),
+    filesEl=document.getElementById("fileGrid");
+
+(function initRows(){
+  var h="";
+  for(var i=0;i<8;i++) h+='<li id="row'+i+'"><span class="yr">'+String(i+1).padStart(2,"0")+'</span><span class="tx">'+YEARS[i].h.toLowerCase()+'</span><span class="mk">—</span></li>';
+  rowsEl.innerHTML=h;
+  var f="";
+  for(var j=0;j<8;j++) f+='<div class="file lock" id="file'+j+'"><h3>'+FILES[j].t+'</h3><p>'+FILES[j].p+'</p><div class="seal">SEALED · YEAR '+String(j+1).padStart(2,"0")+'</div></div>';
+  filesEl.innerHTML=f;
+})();
+
+function log(txt,cls){
+  var p=document.createElement("p"); if(cls) p.className=cls; p.textContent=txt;
+  logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight;
+}
+function hud(){
+  document.getElementById("hYear").textContent=Math.min(G.year,8)+"/8";
+  document.getElementById("hSen").textContent=G.sen+"y";
+  document.getElementById("hFund").textContent=G.fund;
+  document.getElementById("hMiss").textContent=G.miss;
+}
+function clerkStage(){
+  var st=G.year<=2?0:(G.year<=4?1:(G.done?3:2));
+  var names=["NEW HIRE","ON THE BOOK","VETERAN","RETIRED"];
+  var notes=["still has all his hair. it will not last.","reading glasses acquired. drawer is filling.","four ribbons and a bag by his shoe.","the chair, the cat, and a very full drawer."];
+  document.getElementById("clerkImg").src=STAGES[st].img;
+  document.getElementById("clerkName").textContent=names[st];
+  document.getElementById("clerkNote").textContent=notes[st];
+}
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+function buildStamps(){
+  var n = G.year<=2?2:(G.year<=4?3:4);
+  var pool=shuffle(DECOYS.slice());
+  if(G.year>=5){ pool.sort(function(a,b){ var la=(a.indexOf("H")===0)?0:1, lb=(b.indexOf("H")===0)?0:1; return la-lb; }); }
+  var opts=["HOLD"].concat(pool.slice(0,n-1));
+  shuffle(opts);
+  stampsEl.innerHTML="";
+  opts.forEach(function(o){
+    var b=document.createElement("button");
+    b.className="st"+(o==="HOLD"?"":(o.indexOf("H")===0?" grey":" red"));
+    b.textContent=o;
+    b.addEventListener("click",function(){ pick(o,b); });
+    stampsEl.appendChild(b);
+  });
+}
+function showPaper(){
+  var y=YEARS[G.year-1];
+  var f=document.createElement("div"); f.className="form";
+  f.innerHTML='<div class="fh">'+y.h+' · YEAR '+String(G.year).padStart(2,"0")+(G.papersInYear>1?(" · SHEET "+(G.paper+1)+" OF "+G.papersInYear):"")+'</div>'+
+              '<div class="ft">'+y.t+'</div><div class="fb">'+y.b+'</div>'+
+              '<div class="fline"><span>WINDOW 3</span><span>AWAITING STAMP</span></div>';
+  papers.appendChild(f);
+  requestAnimationFrame(function(){ f.classList.add("in"); });
+  sPage();
+  G.cur=f;
+  buildStamps();
+  G.dur=Math.max(2.9,7.0-(G.year-1)*.52)*1000;
+  G.t0=performance.now(); G.locked=false;
+  timerBox.classList.remove("warn");
+  cancelAnimationFrame(G.raf); tickTimer();
+}
+function tickTimer(){
+  var p=1-(performance.now()-G.t0)/G.dur;
+  if(p<=0){ timerBar.style.transform="scaleX(0)"; timeout(); return; }
+  timerBar.style.transform="scaleX("+p+")";
+  if(p<.33) timerBox.classList.add("warn");
+  G.raf=requestAnimationFrame(tickTimer);
+}
+function stopTimer(){ cancelAnimationFrame(G.raf); }
+function inkOn(txt,ok){
+  var i=document.createElement("div"); i.className="ink";
+  i.textContent=txt;
+  i.style.left="50%"; i.style.top="62%";
+  if(!ok){ i.style.color="rgba(178,36,44,.85)"; i.style.borderColor="rgba(178,36,44,.85)"; }
+  G.cur.appendChild(i);
+  requestAnimationFrame(function(){ i.classList.add("go"); });
+}
+function clearPaper(){
+  if(!G.cur) return;
+  var f=G.cur; G.cur=null;
+  f.classList.remove("in"); f.classList.add("out");
+  setTimeout(function(){ f.remove(); },320);
+}
+function pick(v,btn){
+  if(G.locked||!G.running) return;
+  G.locked=true; stopTimer();
+  Array.prototype.forEach.call(stampsEl.children,function(c){ c.disabled=true; });
+  sStamp();
+  if(v==="HOLD"){
+    inkOn("HOLD",true);
+    var got=3+Math.floor(Math.random()*7);
+    G.fund+=got; hud();
+    setTimeout(sOk,180);
+    log("year "+String(G.year).padStart(2,"0")+" · stamped HOLD · +"+got+" into the drawer","ok");
+    setTimeout(nextPaper,700);
+  }else{
+    inkOn(v,false);
+    G.miss++; hud();
+    setTimeout(sBad,180);
+    log("misfiled · "+v.toLowerCase()+" is not a stamp we use here. sheet returned.","bad");
+    setTimeout(function(){ clearPaper(); setTimeout(showPaper,340); },760);
+  }
+}
+function timeout(){
+  if(G.locked||!G.running) return;
+  G.locked=true;
+  Array.prototype.forEach.call(stampsEl.children,function(c){ c.disabled=true; });
+  G.miss++; hud(); sBad();
+  log("the sheet aged out on the counter. somebody behind you sighed.","bad");
+  setTimeout(function(){ clearPaper(); setTimeout(showPaper,340); },700);
+}
+function nextPaper(){
+  clearPaper();
+  G.paper++;
+  if(G.paper<G.papersInYear){ setTimeout(showPaper,360); return; }
+  G.sen+=5; hud();
+  var r=document.getElementById("row"+(G.year-1));
+  r.classList.add("done"); r.classList.remove("now");
+  r.querySelector(".mk").textContent="HOLD";
+  var fl=document.getElementById("file"+(G.year-1)); fl.classList.remove("lock"); fl.classList.add("open");
+  if(G.year>=8){ finish(); return; }
+  G.year++; G.paper=0; G.papersInYear=G.year>=6?2:1;
+  clerkStage();
+  var nr=document.getElementById("row"+(G.year-1)); nr.classList.add("now");
+  setTimeout(showPaper,420);
+}
+function finish(){
+  G.running=false; G.done=true; clerkStage();
+  stampsEl.innerHTML="";
+  timerBar.style.transform="scaleX(0)";
+  papers.appendChild(idleTxt); idleTxt.innerHTML="forty years, one stamp.<br>the drawer is full and still shut.";
+  log("eight entries, forty years of service, zero sales. pension granted.","ok");
+  startBtn.textContent="FILE IT ALL AGAIN";
+  document.getElementById("win").classList.add("on");
+  coinRain();
+}
+function start(){
+  document.getElementById("win").classList.remove("on");
+  G.running=true; G.done=false; G.year=1; G.paper=0; G.papersInYear=1; G.sen=0; G.fund=0; G.miss=0;
+  hud(); clerkStage(); sBell();
+  for(var i=0;i<8;i++){ var r=document.getElementById("row"+i); r.className=""; r.querySelector(".mk").textContent="—";
+    var f=document.getElementById("file"+i); f.className="file lock"; }
+  document.getElementById("row0").classList.add("now");
+  if(idleTxt.parentNode) idleTxt.remove();
+  startBtn.textContent="YEAR IN PROGRESS…";
+  logEl.innerHTML=""; log("book opened at year one. blue stamp located.");
+  setTimeout(showPaper,300);
+}
+startBtn.addEventListener("click",function(){ if(!G.running) start(); });
+document.getElementById("winClose").addEventListener("click",function(){ document.getElementById("win").classList.remove("on"); });
+hud();
+
+/* ---- victory coin rain ---- */
+var rain=document.getElementById("rain");
+function coinRain(){
+  var n=0;
+  var iv=setInterval(function(){
+    n++;
+    for(var k=0;k<3;k++){
+      var d=document.createElement("div"); d.className="coin";
+      var x=Math.random()*window.innerWidth;
+      d.style.left=x+"px"; d.style.top="-30px"; rain.appendChild(d);
+      (function(el){
+        var vy=2+Math.random()*3, y=-30, rot=(Math.random()-.5)*20, m=0;
+        (function st(){
+          m++; vy+=.3; y+=vy;
+          el.style.transform="translateY("+y+"px) rotate("+(m*rot)+"deg)";
+          if(y>window.innerHeight+60){ el.remove(); return; }
+          requestAnimationFrame(st);
+        })();
+      })(d);
+    }
+    if(n>26) clearInterval(iv);
+  },90);
+}
+</script>
+</body>
+</html>
